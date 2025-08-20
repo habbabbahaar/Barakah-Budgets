@@ -84,10 +84,14 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
   const paymentMethod = form.watch('paymentMethod');
 
   const onSubmit = async (values: AddTransactionFormValues) => {
+    const { paymentSource, ...restOfValues } = values;
+    
     const transactionData = {
-        ...values,
-        cashInHand: values.paymentMethod === 'cash' && values.paymentSource === 'in_hand',
+      ...restOfValues,
+      cashInHand: values.paymentMethod === 'cash' && values.paymentSource === 'in_hand',
+      ...(values.paymentMethod === 'cash' && { paymentSource }),
     };
+    
     await onAddTransaction(transactionData);
     form.reset();
     setIsOpen(false);
