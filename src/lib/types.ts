@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 
 export type TransactionType = 'income' | 'expense';
+export type PaymentMethod = 'cash' | 'online';
 
 export type TransactionCategory = {
   value: string;
@@ -16,4 +17,5 @@ export interface Transaction {
   description: string;
   isShared: boolean;
   date: Date;
+  paymentMethod: PaymentMethod;
 }

@@ -44,6 +44,7 @@ const formSchema = z.object({
   category: z.string().min(1, 'Please select a category'),
   description: z.string().min(3, 'Description must be at least 3 characters'),
   isShared: z.boolean(),
+  paymentMethod: z.enum(['cash', 'online']),
 });
 
 type AddTransactionFormValues = z.infer<typeof formSchema>;
@@ -66,6 +67,7 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
       category: '',
       description: '',
       isShared: true,
+      paymentMethod: 'online',
     },
   });
 
@@ -225,36 +227,69 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
               </Button>
             </div>
 
-            <FormField
-              control={form.control}
-              name="isShared"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Account</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={(value) => field.onChange(value === 'true')}
-                      defaultValue={String(field.value)}
-                      className="flex space-x-4"
-                    >
-                      <FormItem className="flex items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="true" />
-                        </FormControl>
-                        <FormLabel className="font-normal">paami acound</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="false" />
-                        </FormControl>
-                        <FormLabel className="font-normal">habba acound</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+             <div className="grid grid-cols-2 gap-4">
+               <FormField
+                control={form.control}
+                name="isShared"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>Account</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={(value) => field.onChange(value === 'true')}
+                        defaultValue={String(field.value)}
+                        className="flex space-x-4"
+                      >
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="true" />
+                          </FormControl>
+                          <FormLabel className="font-normal">paami acound</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="false" />
+                          </FormControl>
+                          <FormLabel className="font-normal">habba acound</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="paymentMethod"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>Payment Method</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex space-x-4"
+                      >
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="online" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Online</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="cash" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Cash</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
 
             <DialogFooter>
               <Button type="submit" disabled={form.formState.isSubmitting}>
