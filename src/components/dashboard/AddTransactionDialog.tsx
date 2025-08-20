@@ -32,7 +32,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
 import { TRANSACTION_CATEGORIES } from '@/lib/constants';
 import type { Transaction } from '@/lib/types';
 import { suggestCategory } from '@/ai/flows/categorize-transaction';
@@ -46,8 +45,17 @@ const formSchema = z.object({
   description: z.string().min(3, 'Description must be at least 3 characters'),
   account: z.enum(['wife', 'husband']),
   paymentMethod: z.enum(['cash', 'online']),
-  cashInHand: z.boolean().default(false).optional(),
+  paymentSource: z.enum(['in_hand', 'in_account']).optional(),
+}).refine(data => {
+    if (data.paymentMethod === 'cash') {
+        return !!data.paymentSource;
+    }
+    return true;
+}, {
+    message: "Please select a source for cash payment",
+    path: ["paymentSource"],
 });
+
 
 type AddTransactionFormValues = z.infer<typeof formSchema>;
 
@@ -70,12 +78,17 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
       description: '',
       account: 'wife',
       paymentMethod: 'online',
-      cashInHand: false,
     },
   });
 
+  const paymentMethod = form.watch('paymentMethod');
+
   const onSubmit = async (values: AddTransactionFormValues) => {
-    await onAddTransaction(values);
+    const transactionData = {
+        ...values,
+        cashInHand: values.paymentMethod === 'cash' && values.paymentSource === 'in_hand',
+    };
+    await onAddTransaction(transactionData);
     form.reset();
     setIsOpen(false);
     toast({
@@ -230,88 +243,108 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
               </Button>
             </div>
 
-             <div className="grid grid-cols-2 gap-4">
-               <FormField
-                control={form.control}
-                name="account"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel>Account</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex space-x-4"
-                      >
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="wife" />
-                          </FormControl>
-                          <FormLabel className="font-normal">Wife's Account</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="husband" />
-                          </FormControl>
-                          <FormLabel className="font-normal">Husband's Account</FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-               <FormField
-                control={form.control}
-                name="paymentMethod"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel>Payment Method</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex space-x-4"
-                      >
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="online" />
-                          </FormControl>
-                          <FormLabel className="font-normal">Online</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="cash" />
-                          </FormControl>
-                          <FormLabel className="font-normal">Cash</FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
+             <FormField
               control={form.control}
-              name="cashInHand"
+              name="account"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormItem className="space-y-3">
+                  <FormLabel>Account</FormLabel>
                   <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex space-x-4"
+                    >
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="wife" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Wife's Account</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="husband" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Husband's Account</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
                   </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      Cash in Hand
-                    </FormLabel>
-                  </div>
+                  <FormMessage />
                 </FormItem>
               )}
             />
+            
+            <FormField
+              control={form.control}
+              name="paymentMethod"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Payment Method</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        if (value === 'online') {
+                            form.setValue('paymentSource', undefined);
+                        } else {
+                            form.setValue('paymentSource', 'in_account');
+                        }
+                      }}
+                      defaultValue={field.value}
+                      className="flex space-x-4"
+                    >
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="online" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Online</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="cash" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Cash</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {paymentMethod === 'cash' && (
+              <FormField
+                control={form.control}
+                name="paymentSource"
+                render={({ field }) => (
+                  <FormItem className="space-y-3 rounded-md border p-4">
+                    <FormLabel>Payment Source</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex space-x-4"
+                      >
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="in_account" />
+                          </FormControl>
+                          <FormLabel className="font-normal">In Account</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="in_hand" />
+                          </FormControl>
+                          <FormLabel className="font-normal">In Hand</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
 
             <DialogFooter>
               <Button type="submit" disabled={form.formState.isSubmitting}>
