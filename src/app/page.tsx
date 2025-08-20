@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import type { Transaction } from '@/lib/types';
-import { PlusCircle, Wallet } from 'lucide-react';
+import { PlusCircle, Wallet, HandCoins } from 'lucide-react';
 import FinanceSummaryCard from '@/components/dashboard/FinanceSummaryCard';
 import TransactionHistory from '@/components/dashboard/TransactionHistory';
 import AddTransactionDialog from '@/components/dashboard/AddTransactionDialog';
@@ -40,20 +40,30 @@ export default function Home() {
     }
   };
 
-  const { wife, husband } = useMemo(() => {
+  const { wife, husband, cashInHand } = useMemo(() => {
     const wife = { income: 0, expenses: 0 };
     const husband = { income: 0, expenses: 0 };
+    const cashInHand = { wife: 0, husband: 0 };
 
     transactions.forEach(t => {
-      const target = t.account === 'wife' ? wife : husband;
-      if (t.type === 'income') {
-        target.income += t.amount;
+      if (t.cashInHand) {
+        const cashTarget = t.account === 'wife' ? 'wife' : 'husband';
+        if (t.type === 'income') {
+          cashInHand[cashTarget] += t.amount;
+        } else {
+          cashInHand[cashTarget] -= t.amount;
+        }
       } else {
-        target.expenses += t.amount;
+        const target = t.account === 'wife' ? wife : husband;
+        if (t.type === 'income') {
+          target.income += t.amount;
+        } else {
+          target.expenses += t.amount;
+        }
       }
     });
 
-    return { wife, husband };
+    return { wife, husband, cashInHand };
   }, [transactions]);
 
 
@@ -75,12 +85,13 @@ export default function Home() {
         </header>
         
         {loading ? (
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2 mb-8">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-8">
+            <Skeleton className="h-48 w-full" />
             <Skeleton className="h-48 w-full" />
             <Skeleton className="h-48 w-full" />
           </div>
         ) : (
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2 mb-8">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-8">
             <FinanceSummaryCard
               title="Wife's Account"
               income={wife.income}
@@ -92,6 +103,16 @@ export default function Home() {
               income={husband.income}
               expenses={husband.expenses}
               balance={husband.income - husband.expenses}
+            />
+             <FinanceSummaryCard
+              title="Cash on Hand"
+              balanceIcon={HandCoins}
+              income={cashInHand.wife}
+              incomeLabel="Wife"
+              expenses={cashInHand.husband}
+              expensesLabel="Husband"
+              balance={cashInHand.wife + cashInHand.husband}
+              isCashSummary
             />
           </div>
         )}
