@@ -32,8 +32,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { TRANSACTION_CATEGORIES } from '@/lib/constants';
 import type { Transaction } from '@/lib/types';
 import { suggestCategory } from '@/ai/flows/categorize-transaction';
@@ -100,8 +98,6 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
       if (isValidCategory) {
         form.setValue('category', suggestedCategory);
       } else {
-        // Handle cases where AI returns a category not in our list
-        // For simplicity, we can default to 'Other' or show a toast
         toast({
             title: "Suggestion Not Found",
             description: `The suggested category "${suggestedCategory}" is not in our list. Please select one manually.`,
@@ -233,20 +229,29 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
               control={form.control}
               name="isShared"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="shared-switch">Shared Transaction</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Mark this for shared household expenses or income.
-                    </p>
-                  </div>
+                <FormItem className="space-y-3">
+                  <FormLabel>Account</FormLabel>
                   <FormControl>
-                    <Switch
-                      id="shared-switch"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <RadioGroup
+                      onValueChange={(value) => field.onChange(value === 'true')}
+                      defaultValue={String(field.value)}
+                      className="flex space-x-4"
+                    >
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="true" />
+                        </FormControl>
+                        <FormLabel className="font-normal">paami acound</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="false" />
+                        </FormControl>
+                        <FormLabel className="font-normal">habba acound</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
