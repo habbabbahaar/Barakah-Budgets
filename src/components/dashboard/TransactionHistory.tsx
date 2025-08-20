@@ -81,9 +81,9 @@ export default function TransactionHistory({ transactions, isLoading }: Transact
                             {isIncome ? '+' : '-'} {formatCurrency(t.amount)}
                         </span>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge variant={t.isShared ? 'default' : 'secondary'} className="cursor-default">
-                              {t.isShared ? <Users className="h-3 w-3 mr-1" /> : <User className="h-3 w-3 mr-1" />}
-                              {t.isShared ? 'Shared' : 'Personal'}
+                          <Badge variant={t.account === 'wife' ? 'default' : 'secondary'} className="cursor-default capitalize">
+                              <User className="h-3 w-3 mr-1" />
+                              {t.account}'s
                           </Badge>
                           <Badge variant="outline" className="cursor-default capitalize">
                             {t.paymentMethod === 'online' ? <CreditCard className="h-3 w-3 mr-1" /> : <Banknote className="h-3 w-3 mr-1" />}

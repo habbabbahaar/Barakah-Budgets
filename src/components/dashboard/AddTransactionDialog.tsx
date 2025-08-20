@@ -43,7 +43,7 @@ const formSchema = z.object({
   type: z.enum(['income', 'expense']),
   category: z.string().min(1, 'Please select a category'),
   description: z.string().min(3, 'Description must be at least 3 characters'),
-  isShared: z.boolean(),
+  account: z.enum(['wife', 'husband']),
   paymentMethod: z.enum(['cash', 'online']),
 });
 
@@ -66,7 +66,7 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
       type: 'expense',
       category: '',
       description: '',
-      isShared: true,
+      account: 'wife',
       paymentMethod: 'online',
     },
   });
@@ -230,27 +230,27 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
              <div className="grid grid-cols-2 gap-4">
                <FormField
                 control={form.control}
-                name="isShared"
+                name="account"
                 render={({ field }) => (
                   <FormItem className="space-y-3">
                     <FormLabel>Account</FormLabel>
                     <FormControl>
                       <RadioGroup
-                        onValueChange={(value) => field.onChange(value === 'true')}
-                        defaultValue={String(field.value)}
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
                         className="flex space-x-4"
                       >
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="true" />
+                            <RadioGroupItem value="wife" />
                           </FormControl>
-                          <FormLabel className="font-normal">paami acound</FormLabel>
+                          <FormLabel className="font-normal">Wife's Account</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="false" />
+                            <RadioGroupItem value="husband" />
                           </FormControl>
-                          <FormLabel className="font-normal">habba acound</FormLabel>
+                          <FormLabel className="font-normal">Husband's Account</FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>

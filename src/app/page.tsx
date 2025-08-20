@@ -40,12 +40,12 @@ export default function Home() {
     }
   };
 
-  const { shared, personal } = useMemo(() => {
-    const shared = { income: 0, expenses: 0 };
-    const personal = { income: 0, expenses: 0 };
+  const { wife, husband } = useMemo(() => {
+    const wife = { income: 0, expenses: 0 };
+    const husband = { income: 0, expenses: 0 };
 
     transactions.forEach(t => {
-      const target = t.isShared ? shared : personal;
+      const target = t.account === 'wife' ? wife : husband;
       if (t.type === 'income') {
         target.income += t.amount;
       } else {
@@ -53,7 +53,7 @@ export default function Home() {
       }
     });
 
-    return { shared, personal };
+    return { wife, husband };
   }, [transactions]);
 
 
@@ -82,16 +82,16 @@ export default function Home() {
         ) : (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2 mb-8">
             <FinanceSummaryCard
-              title="paami acaunt"
-              income={shared.income}
-              expenses={shared.expenses}
-              balance={shared.income - shared.expenses}
+              title="Wife's Account"
+              income={wife.income}
+              expenses={wife.expenses}
+              balance={wife.income - wife.expenses}
             />
             <FinanceSummaryCard
-              title="habba acound"
-              income={personal.income}
-              expenses={personal.expenses}
-              balance={personal.income - personal.expenses}
+              title="Husband's Account"
+              income={husband.income}
+              expenses={husband.expenses}
+              balance={husband.income - husband.expenses}
             />
           </div>
         )}
