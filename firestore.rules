@@ -1,11 +1,12 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // WARNING: These rules are permissive and allow anyone to read or write to
-    // the transactions collection. For a real application, you should implement
-    // authentication and secure these rules further.
-    match /transactions/{transactionId} {
+    // Allow read and write access to all documents
+    // for prototyping purposes.
+    // WARNING: This is not secure for production.
+    match /{document=**} {
       allow read, write: if true;
     }
   }
