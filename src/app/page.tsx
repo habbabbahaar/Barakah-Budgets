@@ -107,10 +107,8 @@ export default function Home() {
              <FinanceSummaryCard
               title="Cash on Hand"
               balanceIcon={HandCoins}
-              income={cashInHand.wife}
-              incomeLabel="Wife"
-              expenses={cashInHand.husband}
-              expensesLabel="Husband"
+              wifeBalance={cashInHand.wife}
+              husbandBalance={cashInHand.husband}
               balance={cashInHand.wife + cashInHand.husband}
               isCashSummary
             />

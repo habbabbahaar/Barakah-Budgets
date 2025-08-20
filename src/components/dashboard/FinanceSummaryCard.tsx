@@ -7,8 +7,8 @@ interface FinanceSummaryCardProps {
   expenses?: number;
   balance: number;
   isCashSummary?: boolean;
-  incomeLabel?: string;
-  expensesLabel?: string;
+  wifeBalance?: number;
+  husbandBalance?: number;
   balanceIcon?: LucideIcon;
 }
 
@@ -25,8 +25,8 @@ export default function FinanceSummaryCard({
   expenses, 
   balance,
   isCashSummary = false,
-  incomeLabel = 'Income',
-  expensesLabel = 'Expenses',
+  wifeBalance,
+  husbandBalance,
   balanceIcon: BalanceIcon = Landmark,
 }: FinanceSummaryCardProps) {
   const balanceColor = balance >= 0 ? 'text-accent' : 'text-destructive';
@@ -37,23 +37,44 @@ export default function FinanceSummaryCard({
         <CardTitle className="text-xl font-headline">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {income !== undefined && (
-          <div className="flex items-center justify-between text-lg">
-            <div className={`flex items-center gap-2 ${isCashSummary ? '' : 'text-green-600'}`}>
-              {isCashSummary ? <User className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
-              <span>{incomeLabel}</span>
+        {isCashSummary ? (
+          <>
+            <div className="flex items-center justify-between text-lg">
+              <div className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                <span>Wife</span>
+              </div>
+              <span className="font-semibold">{formatCurrency(wifeBalance ?? 0)}</span>
             </div>
-            <span className="font-semibold">{formatCurrency(income)}</span>
-          </div>
-        )}
-        {expenses !== undefined && (
-          <div className="flex items-center justify-between text-lg">
-            <div className={`flex items-center gap-2 ${isCashSummary ? '' : 'text-red-600'}`}>
-              {isCashSummary ? <User className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
-              <span>{expensesLabel}</span>
+            <div className="flex items-center justify-between text-lg">
+              <div className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                <span>Husband</span>
+              </div>
+              <span className="font-semibold">{formatCurrency(husbandBalance ?? 0)}</span>
             </div>
-            <span className="font-semibold">{formatCurrency(expenses)}</span>
-          </div>
+          </>
+        ) : (
+          <>
+            {income !== undefined && (
+              <div className="flex items-center justify-between text-lg">
+                <div className="flex items-center gap-2 text-green-600">
+                  <TrendingUp className="h-5 w-5" />
+                  <span>Income</span>
+                </div>
+                <span className="font-semibold">{formatCurrency(income)}</span>
+              </div>
+            )}
+            {expenses !== undefined && (
+              <div className="flex items-center justify-between text-lg">
+                <div className="flex items-center gap-2 text-red-600">
+                  <TrendingDown className="h-5 w-5" />
+                  <span>Expenses</span>
+                </div>
+                <span className="font-semibold">{formatCurrency(expenses)}</span>
+              </div>
+            )}
+          </>
         )}
         
         <div className="border-t pt-4 flex items-center justify-between text-xl font-bold">
