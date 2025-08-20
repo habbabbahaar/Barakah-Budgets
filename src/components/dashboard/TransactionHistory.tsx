@@ -57,6 +57,7 @@ export default function TransactionHistory({ transactions, isLoading }: Transact
             ) : transactions.map((t) => {
               const CategoryIcon = CATEGORY_MAP[t.category]?.icon || TrendingDown;
               const isIncome = t.type === 'income';
+              const accountName = t.account === 'wife' ? "Paami's" : "Habba's";
 
               return (
                 <TableRow key={t.id} className="transition-colors hover:bg-secondary/50">
@@ -83,7 +84,7 @@ export default function TransactionHistory({ transactions, isLoading }: Transact
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant={t.account === 'wife' ? 'default' : 'secondary'} className="cursor-default capitalize">
                               <User className="h-3 w-3 mr-1" />
-                              {t.account}'s
+                              {accountName}
                           </Badge>
                           <Badge variant="outline" className="cursor-default capitalize">
                             {t.paymentMethod === 'online' ? <CreditCard className="h-3 w-3 mr-1" /> : <Banknote className="h-3 w-3 mr-1" />}

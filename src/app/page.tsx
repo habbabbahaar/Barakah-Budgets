@@ -46,8 +46,8 @@ export default function Home() {
     const cashInHand = { wife: 0, husband: 0 };
 
     transactions.forEach(t => {
-      const cashTarget = t.account === 'wife' ? 'wife' : 'husband';
       if (t.cashInHand) {
+        const cashTarget = t.account === 'wife' ? 'wife' : 'husband';
         if (t.type === 'income') {
           cashInHand[cashTarget] += t.amount;
         } else {
@@ -93,13 +93,13 @@ export default function Home() {
         ) : (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-8">
             <FinanceSummaryCard
-              title="paami'sAccount"
+              title="Paami Account"
               income={wife.income}
               expenses={wife.expenses}
               balance={wife.income - wife.expenses}
             />
             <FinanceSummaryCard
-              title="Husband's Account"
+              title="Habba Account"
               income={husband.income}
               expenses={husband.expenses}
               balance={husband.income - husband.expenses}
