@@ -50,7 +50,7 @@ type AddTransactionFormValues = z.infer<typeof formSchema>;
 
 interface AddTransactionDialogProps {
   children: React.ReactNode;
-  onAddTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
+  onAddTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => Promise<void>;
 }
 
 export default function AddTransactionDialog({ children, onAddTransaction }: AddTransactionDialogProps) {
@@ -65,12 +65,12 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
       type: 'expense',
       category: '',
       description: '',
-      isShared: false,
+      isShared: true,
     },
   });
 
-  const onSubmit = (values: AddTransactionFormValues) => {
-    onAddTransaction(values);
+  const onSubmit = async (values: AddTransactionFormValues) => {
+    await onAddTransaction(values);
     form.reset();
     setIsOpen(false);
     toast({
@@ -257,7 +257,9 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
             />
 
             <DialogFooter>
-              <Button type="submit">Add Transaction</Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add Transaction"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

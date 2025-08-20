@@ -11,9 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, User, Users } from 'lucide-react';
 import { CATEGORY_MAP } from '@/lib/constants';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface TransactionHistoryProps {
   transactions: Transaction[];
+  isLoading: boolean;
 }
 
 const formatCurrency = (amount: number) => {
@@ -23,7 +25,7 @@ const formatCurrency = (amount: number) => {
     }).format(amount);
   };
 
-export default function TransactionHistory({ transactions }: TransactionHistoryProps) {
+export default function TransactionHistory({ transactions, isLoading }: TransactionHistoryProps) {
   return (
     <Card className="shadow-md">
       <CardHeader>
@@ -40,7 +42,19 @@ export default function TransactionHistory({ transactions }: TransactionHistoryP
             </TableRow>
           </TableHeader>
           <TableBody>
-            {transactions.map((t) => {
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell><Skeleton className="h-5 w-5 rounded-full" /></TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/4 mt-1" />
+                  </TableCell>
+                  <TableCell><Skeleton className="h-4 w-1/2" /></TableCell>
+                  <TableCell className="text-right"><Skeleton className="h-4 w-1/2 ml-auto" /></TableCell>
+                </TableRow>
+              ))
+            ) : transactions.map((t) => {
               const CategoryIcon = CATEGORY_MAP[t.category]?.icon || TrendingDown;
               const isIncome = t.type === 'income';
 
@@ -77,7 +91,7 @@ export default function TransactionHistory({ transactions }: TransactionHistoryP
             })}
           </TableBody>
         </Table>
-        {transactions.length === 0 && (
+        {!isLoading && transactions.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
                 No transactions yet. Add one to get started!
             </div>

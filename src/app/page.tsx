@@ -1,33 +1,43 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Transaction } from '@/lib/types';
 import { PlusCircle, Wallet } from 'lucide-react';
 import FinanceSummaryCard from '@/components/dashboard/FinanceSummaryCard';
 import TransactionHistory from '@/components/dashboard/TransactionHistory';
 import AddTransactionDialog from '@/components/dashboard/AddTransactionDialog';
 import { Button } from '@/components/ui/button';
-
-const initialTransactions: Transaction[] = [
-  { id: '1', amount: 3000, type: 'income', category: 'Salary', description: 'Monthly paycheck', isShared: true, date: new Date('2023-10-01') },
-  { id: '2', amount: 80, type: 'expense', category: 'Groceries', description: 'Weekly groceries', isShared: true, date: new Date('2023-10-05') },
-  { id: '3', amount: 50, type: 'expense', category: 'Transport', description: 'Gas for car', isShared: false, date: new Date('2023-10-06') },
-  { id: '4', amount: 250, type: 'income', category: 'Freelance', description: 'Side project payment', isShared: false, date: new Date('2023-10-10') },
-  { id: '5', amount: 45, type: 'expense', category: 'Entertainment', description: 'Movie tickets', isShared: true, date: new Date('2023-10-12') },
-  { id: '6', amount: 1200, type: 'expense', category: 'Bills', description: 'Rent payment', isShared: true, date: new Date('2023-10-01') },
-];
-
+import { getTransactions, addTransaction as addTransactionService } from '@/services/transactions';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addTransaction = (transaction: Omit<Transaction, 'id' | 'date'>) => {
-    const newTransaction: Transaction = {
-      ...transaction,
-      id: new Date().getTime().toString(),
-      date: new Date(),
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const fetchedTransactions = await getTransactions();
+        setTransactions(fetchedTransactions);
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+        // Optionally, show a toast notification to the user
+      } finally {
+        setLoading(false);
+      }
     };
-    setTransactions(prev => [newTransaction, ...prev]);
+
+    fetchTransactions();
+  }, []);
+
+  const addTransaction = async (transaction: Omit<Transaction, 'id' | 'date'>) => {
+    try {
+      const newTransaction = await addTransactionService(transaction);
+      setTransactions(prev => [newTransaction, ...prev]);
+    } catch (error) {
+      console.error("Error adding transaction:", error);
+       // Optionally, show a toast notification to the user
+    }
   };
 
   const { shared, personal } = useMemo(() => {
@@ -64,22 +74,29 @@ export default function Home() {
           </AddTransactionDialog>
         </header>
         
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2 mb-8">
-          <FinanceSummaryCard
-            title="paami acaunt"
-            income={shared.income}
-            expenses={shared.expenses}
-            balance={shared.income - shared.expenses}
-          />
-          <FinanceSummaryCard
-            title="habba acound"
-            income={personal.income}
-            expenses={personal.expenses}
-            balance={personal.income - personal.expenses}
-          />
-        </div>
+        {loading ? (
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2 mb-8">
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-48 w-full" />
+          </div>
+        ) : (
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2 mb-8">
+            <FinanceSummaryCard
+              title="paami acaunt"
+              income={shared.income}
+              expenses={shared.expenses}
+              balance={shared.income - shared.expenses}
+            />
+            <FinanceSummaryCard
+              title="habba acound"
+              income={personal.income}
+              expenses={personal.expenses}
+              balance={personal.income - personal.expenses}
+            />
+          </div>
+        )}
 
-        <TransactionHistory transactions={transactions} />
+        <TransactionHistory transactions={transactions} isLoading={loading} />
       </main>
     </div>
   );
