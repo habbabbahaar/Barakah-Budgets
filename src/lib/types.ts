@@ -19,4 +19,5 @@ export interface Transaction {
   account: AccountType;
   date: Date;
   paymentMethod: PaymentMethod;
+  cashInHand?: boolean;
 }

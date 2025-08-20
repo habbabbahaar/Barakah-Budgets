@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { TRANSACTION_CATEGORIES } from '@/lib/constants';
 import type { Transaction } from '@/lib/types';
 import { suggestCategory } from '@/ai/flows/categorize-transaction';
@@ -45,6 +46,7 @@ const formSchema = z.object({
   description: z.string().min(3, 'Description must be at least 3 characters'),
   account: z.enum(['wife', 'husband']),
   paymentMethod: z.enum(['cash', 'online']),
+  cashInHand: z.boolean().default(false).optional(),
 });
 
 type AddTransactionFormValues = z.infer<typeof formSchema>;
@@ -68,6 +70,7 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
       description: '',
       account: 'wife',
       paymentMethod: 'online',
+      cashInHand: false,
     },
   });
 
@@ -290,6 +293,25 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
               />
             </div>
 
+            <FormField
+              control={form.control}
+              name="cashInHand"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Cash in Hand
+                    </FormLabel>
+                  </div>
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
               <Button type="submit" disabled={form.formState.isSubmitting}>

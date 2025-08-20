@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, User, Users, CreditCard, Banknote } from 'lucide-react';
+import { TrendingUp, TrendingDown, User, Users, CreditCard, Banknote, Hand } from 'lucide-react';
 import { CATEGORY_MAP } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -89,6 +89,12 @@ export default function TransactionHistory({ transactions, isLoading }: Transact
                             {t.paymentMethod === 'online' ? <CreditCard className="h-3 w-3 mr-1" /> : <Banknote className="h-3 w-3 mr-1" />}
                             {t.paymentMethod}
                           </Badge>
+                          {t.cashInHand && (
+                            <Badge variant="outline" className="cursor-default capitalize">
+                                <Hand className="h-3 w-3 mr-1" />
+                                In Hand
+                            </Badge>
+                          )}
                         </div>
                     </div>
                   </TableCell>
