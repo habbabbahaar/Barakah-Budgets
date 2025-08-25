@@ -12,16 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import TransactionCalendar from '@/components/dashboard/TransactionCalendar';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import type { UserOptions } from 'jspdf-autotable';
+import { generatePdf } from '@/lib/pdf';
 
-// Extend the jsPDF interface to include the autoTable method
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: UserOptions) => jsPDF;
-  }
-}
 
 export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -91,25 +83,7 @@ export default function Home() {
   };
 
   const downloadPdf = () => {
-    const doc = new jsPDF();
-    doc.text("Transaction History", 14, 16);
-
-    const tableData = transactions.map(t => [
-        t.date.toLocaleDateString(),
-        t.description,
-        t.category,
-        t.type,
-        t.amount.toFixed(2),
-        t.account === 'wife' ? 'Pamii' : 'Habba'
-    ]);
-
-    doc.autoTable({
-        head: [['Date', 'Description', 'Category', 'Type', 'Amount', 'Account']],
-        body: tableData,
-        startY: 20,
-    });
-
-    doc.save('transactions.pdf');
+    generatePdf(transactions);
   };
 
   const { wife, husband, cashInHand } = useMemo(() => {
