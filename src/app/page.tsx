@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import type { Transaction } from '@/lib/types';
-import { PlusCircle, Wallet, HandCoins } from 'lucide-react';
+import { PlusCircle, Wallet, HandCoins, Download } from 'lucide-react';
 import FinanceSummaryCard from '@/components/dashboard/FinanceSummaryCard';
 import TransactionHistory from '@/components/dashboard/TransactionHistory';
 import AddTransactionDialog from '@/components/dashboard/AddTransactionDialog';
@@ -10,6 +10,18 @@ import { Button } from '@/components/ui/button';
 import { getTransactions, addTransaction as addTransactionService, updateTransaction as updateTransactionService, deleteTransaction as deleteTransactionService } from '@/services/transactions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import TransactionCalendar from '@/components/dashboard/TransactionCalendar';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import type { UserOptions } from 'jspdf-autotable';
+
+// Extend the jsPDF interface to include the autoTable method
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: UserOptions) => jsPDF;
+  }
+}
 
 export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -78,6 +90,28 @@ export default function Home() {
     }
   };
 
+  const downloadPdf = () => {
+    const doc = new jsPDF();
+    doc.text("Transaction History", 14, 16);
+
+    const tableData = transactions.map(t => [
+        t.date.toLocaleDateString(),
+        t.description,
+        t.category,
+        t.type,
+        t.amount.toFixed(2),
+        t.account === 'wife' ? 'Pamii' : 'Habba'
+    ]);
+
+    doc.autoTable({
+        head: [['Date', 'Description', 'Category', 'Type', 'Amount', 'Account']],
+        body: tableData,
+        startY: 20,
+    });
+
+    doc.save('transactions.pdf');
+  };
+
   const { wife, husband, cashInHand } = useMemo(() => {
     const wife = { income: 0, expenses: 0 };
     const husband = { income: 0, expenses: 0 };
@@ -115,11 +149,16 @@ export default function Home() {
               Barakah Budgets
             </h1>
           </div>
-          <AddTransactionDialog onSave={addTransaction}>
-             <Button>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Transaction
-              </Button>
-          </AddTransactionDialog>
+          <div className='flex items-center gap-2'>
+            <Button variant="outline" onClick={downloadPdf} disabled={transactions.length === 0}>
+                <Download className="mr-2 h-4 w-4" /> Download PDF
+            </Button>
+            <AddTransactionDialog onSave={addTransaction}>
+               <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Transaction
+                </Button>
+            </AddTransactionDialog>
+          </div>
         </header>
         
         {loading ? (
@@ -153,12 +192,27 @@ export default function Home() {
           </div>
         )}
 
-        <TransactionHistory 
-          transactions={transactions} 
-          isLoading={loading}
-          onEdit={updateTransaction}
-          onDelete={deleteTransaction}
-        />
+        <Tabs defaultValue="list">
+            <TabsList className="mb-4">
+                <TabsTrigger value="list">List View</TabsTrigger>
+                <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+            </TabsList>
+            <TabsContent value="list">
+                <TransactionHistory 
+                  transactions={transactions} 
+                  isLoading={loading}
+                  onEdit={updateTransaction}
+                  onDelete={deleteTransaction}
+                />
+            </TabsContent>
+            <TabsContent value="calendar">
+                <TransactionCalendar 
+                  transactions={transactions} 
+                  onEdit={updateTransaction}
+                  onDelete={deleteTransaction}
+                />
+            </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
