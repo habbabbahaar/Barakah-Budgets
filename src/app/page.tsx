@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { getTransactions, addTransaction as addTransactionService, updateTransaction as updateTransactionService, deleteTransaction as deleteTransactionService } from '@/services/transactions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { generatePdf } from '@/lib/pdf';
 
 
 export default function Home() {
@@ -80,7 +79,8 @@ export default function Home() {
     }
   };
 
-  const downloadPdf = () => {
+  const downloadPdf = async () => {
+    const { generatePdf } = await import('@/lib/pdf');
     generatePdf(transactions);
   };
 
