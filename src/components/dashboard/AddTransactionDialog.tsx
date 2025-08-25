@@ -305,7 +305,7 @@ export default function AddTransactionDialog({ children, transactionToEdit, onSa
                         <FormControl>
                           <RadioGroupItem value="husband" />
                         </FormControl>
-                        <FormLabel className="font-normal">His Account</FormLabel>
+                        <FormLabel className="font-normal">Habba Account</FormLabel>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
