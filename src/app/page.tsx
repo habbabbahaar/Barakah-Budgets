@@ -10,8 +10,6 @@ import { Button } from '@/components/ui/button';
 import { getTransactions, addTransaction as addTransactionService, updateTransaction as updateTransactionService, deleteTransaction as deleteTransactionService } from '@/services/transactions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import TransactionCalendar from '@/components/dashboard/TransactionCalendar';
 import { generatePdf } from '@/lib/pdf';
 
 
@@ -166,27 +164,12 @@ export default function Home() {
           </div>
         )}
 
-        <Tabs defaultValue="list">
-            <TabsList className="mb-4">
-                <TabsTrigger value="list">List View</TabsTrigger>
-                <TabsTrigger value="calendar">Calendar View</TabsTrigger>
-            </TabsList>
-            <TabsContent value="list">
-                <TransactionHistory 
-                  transactions={transactions} 
-                  isLoading={loading}
-                  onEdit={updateTransaction}
-                  onDelete={deleteTransaction}
-                />
-            </TabsContent>
-            <TabsContent value="calendar">
-                <TransactionCalendar 
-                  transactions={transactions} 
-                  onEdit={updateTransaction}
-                  onDelete={deleteTransaction}
-                />
-            </TabsContent>
-        </Tabs>
+        <TransactionHistory 
+          transactions={transactions} 
+          isLoading={loading}
+          onEdit={updateTransaction}
+          onDelete={deleteTransaction}
+        />
       </main>
     </div>
   );
