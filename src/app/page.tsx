@@ -10,12 +10,16 @@ import { Button } from '@/components/ui/button';
 import { getTransactions, addTransaction as addTransactionService, updateTransaction as updateTransactionService, deleteTransaction as deleteTransactionService } from '@/services/transactions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  
+  const [selectedYear, setSelectedYear] = useState<string>('all');
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
+  const [selectedDay, setSelectedDay] = useState<string>('all');
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -84,12 +88,32 @@ export default function Home() {
     generatePdf(transactions);
   };
 
+  const { years, months, days } = useMemo(() => {
+    const years = [...new Set(transactions.map(t => t.date.getFullYear()))].sort((a, b) => b - a);
+    const months = [...new Set(transactions.filter(t => selectedYear === 'all' || t.date.getFullYear() === parseInt(selectedYear)).map(t => t.date.getMonth()))].sort((a, b) => a - b);
+    const days = [...new Set(transactions.filter(t => 
+        (selectedYear === 'all' || t.date.getFullYear() === parseInt(selectedYear)) &&
+        (selectedMonth === 'all' || t.date.getMonth() === parseInt(selectedMonth))
+    ).map(t => t.date.getDate()))].sort((a, b) => a - b);
+    return { years, months, days };
+  }, [transactions, selectedYear, selectedMonth]);
+
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(t => {
+        const yearMatch = selectedYear === 'all' || t.date.getFullYear() === parseInt(selectedYear);
+        const monthMatch = selectedMonth === 'all' || t.date.getMonth() === parseInt(selectedMonth);
+        const dayMatch = selectedDay === 'all' || t.date.getDate() === parseInt(selectedDay);
+        return yearMatch && monthMatch && dayMatch;
+    });
+  }, [transactions, selectedYear, selectedMonth, selectedDay]);
+
+
   const { wife, husband, cashInHand } = useMemo(() => {
     const wife = { income: 0, expenses: 0 };
     const husband = { income: 0, expenses: 0 };
     const cashInHand = { wife: 0, husband: 0 };
 
-    transactions.forEach(t => {
+    filteredTransactions.forEach(t => {
       if (t.cashInHand) {
         const cashTarget = t.account === 'wife' ? 'wife' : 'husband';
         if (t.type === 'income') {
@@ -108,7 +132,9 @@ export default function Home() {
     });
 
     return { wife, husband, cashInHand };
-  }, [transactions]);
+  }, [filteredTransactions]);
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 
   return (
@@ -164,8 +190,38 @@ export default function Home() {
           </div>
         )}
 
+        <div className="mb-4 flex flex-col md:flex-row gap-4">
+            <Select value={selectedYear} onValueChange={setSelectedYear}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Select Year" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Years</SelectItem>
+                    {years.map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}
+                </SelectContent>
+            </Select>
+            <Select value={selectedMonth} onValueChange={setSelectedMonth} disabled={selectedYear === 'all'}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Select Month" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Months</SelectItem>
+                    {months.map(month => <SelectItem key={month} value={String(month)}>{monthNames[month]}</SelectItem>)}
+                </SelectContent>
+            </Select>
+            <Select value={selectedDay} onValueChange={setSelectedDay} disabled={selectedMonth === 'all'}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Select Day" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Days</SelectItem>
+                    {days.map(day => <SelectItem key={day} value={String(day)}>{day}</SelectItem>)}
+                </SelectContent>
+            </Select>
+        </div>
+
         <TransactionHistory 
-          transactions={transactions} 
+          transactions={filteredTransactions} 
           isLoading={loading}
           onEdit={updateTransaction}
           onDelete={deleteTransaction}
