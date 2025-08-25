@@ -99,7 +99,7 @@ export default function Home() {
               balance={wife.income - wife.expenses}
             />
             <FinanceSummaryCard
-              title="Habba Account"
+              title="His Account"
               income={husband.income}
               expenses={husband.expenses}
               balance={husband.income - husband.expenses}

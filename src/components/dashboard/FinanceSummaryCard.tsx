@@ -42,14 +42,14 @@ export default function FinanceSummaryCard({
             <div className="flex items-center justify-between text-lg">
               <div className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                <span>Paami</span>
+                <span>her</span>
               </div>
               <span className="font-semibold">{formatCurrency(wifeBalance ?? 0)}</span>
             </div>
             <div className="flex items-center justify-between text-lg">
               <div className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                <span>Habba</span>
+                <span>His</span>
               </div>
               <span className="font-semibold">{formatCurrency(husbandBalance ?? 0)}</span>
             </div>
