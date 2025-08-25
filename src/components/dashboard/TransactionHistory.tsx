@@ -57,7 +57,7 @@ export default function TransactionHistory({ transactions, isLoading }: Transact
             ) : transactions.map((t) => {
               const CategoryIcon = CATEGORY_MAP[t.category]?.icon || TrendingDown;
               const isIncome = t.type === 'income';
-              const accountName = t.account === 'wife' ? "her's" : "His";
+              const accountName = t.account === 'wife' ? "Her's" : "His";
 
               return (
                 <TableRow key={t.id} className="transition-colors hover:bg-secondary/50">
