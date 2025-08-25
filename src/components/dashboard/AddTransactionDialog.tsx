@@ -107,18 +107,22 @@ export default function AddTransactionDialog({ children, transactionToEdit, onSa
   const paymentMethod = form.watch('paymentMethod');
 
   const onSubmit = async (values: AddTransactionFormValues) => {
-    const transactionData = {
+    const transactionData: Partial<AddTransactionFormValues & { cashInHand: boolean }> = {
       ...values,
       cashInHand: values.paymentMethod === 'cash' && values.paymentSource === 'in_hand',
     };
+  
+    if (values.paymentMethod === 'online') {
+      delete transactionData.paymentSource;
+    }
 
     if (isEditMode) {
         await onSave({
             ...transactionToEdit,
             ...transactionData,
-        });
+        } as Transaction);
     } else {
-        await onSave(transactionData);
+        await onSave(transactionData as Omit<Transaction, 'id' | 'date'>);
     }
     
     form.reset();
@@ -295,7 +299,7 @@ export default function AddTransactionDialog({ children, transactionToEdit, onSa
                         <FormControl>
                           <RadioGroupItem value="wife" />
                         </FormControl>
-                        <FormLabel className="font-normal">Her Account</FormLabel>
+                        <FormLabel className="font-normal">Pamii Account</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>

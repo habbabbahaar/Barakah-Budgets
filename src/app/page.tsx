@@ -40,10 +40,6 @@ export default function Home() {
     try {
       const newTransaction = await addTransactionService(transaction);
       setTransactions(prev => [newTransaction, ...prev]);
-      toast({
-        title: "Success",
-        description: "Transaction added successfully.",
-      });
     } catch (error) {
       console.error("Error adding transaction:", error);
       toast({
@@ -58,10 +54,6 @@ export default function Home() {
     try {
       await updateTransactionService(transaction);
       setTransactions(prev => prev.map(t => t.id === transaction.id ? transaction : t));
-      toast({
-        title: "Success",
-        description: "Transaction updated successfully.",
-      });
     } catch (error) {
         console.error("Error updating transaction:", error);
         toast({
@@ -76,10 +68,6 @@ export default function Home() {
     try {
         await deleteTransactionService(transactionId);
         setTransactions(prev => prev.filter(t => t.id !== transactionId));
-        toast({
-            title: "Success",
-            description: "Transaction deleted successfully.",
-        });
     } catch (error) {
         console.error("Error deleting transaction:", error);
         toast({
@@ -143,7 +131,7 @@ export default function Home() {
         ) : (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-8">
             <FinanceSummaryCard
-              title="Her Account"
+              title="Pamii Account"
               income={wife.income}
               expenses={wife.expenses}
               balance={wife.income - wife.expenses}
