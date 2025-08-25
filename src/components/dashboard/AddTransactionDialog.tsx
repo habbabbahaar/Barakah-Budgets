@@ -263,7 +263,7 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
                         <FormControl>
                           <RadioGroupItem value="wife" />
                         </FormControl>
-                        <FormLabel className="font-normal">Paami Account</FormLabel>
+                        <FormLabel className="font-normal">her Account</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>

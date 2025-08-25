@@ -93,7 +93,7 @@ export default function Home() {
         ) : (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-8">
             <FinanceSummaryCard
-              title="Paami Account"
+              title="her Account"
               income={wife.income}
               expenses={wife.expenses}
               balance={wife.income - wife.expenses}
