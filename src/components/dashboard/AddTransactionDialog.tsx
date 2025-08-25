@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -61,13 +61,17 @@ type AddTransactionFormValues = z.infer<typeof formSchema>;
 
 interface AddTransactionDialogProps {
   children: React.ReactNode;
-  onAddTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => Promise<void>;
+  transactionToEdit?: Transaction;
+  onSave: (data: Omit<Transaction, 'id' | 'date'> | Transaction) => Promise<void>;
+  onClose?: () => void;
 }
 
-export default function AddTransactionDialog({ children, onAddTransaction }: AddTransactionDialogProps) {
+export default function AddTransactionDialog({ children, transactionToEdit, onSave, onClose }: AddTransactionDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const { toast } = useToast();
+
+  const isEditMode = !!transactionToEdit;
 
   const form = useForm<AddTransactionFormValues>({
     resolver: zodResolver(formSchema),
@@ -81,25 +85,53 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
     },
   });
 
+  useEffect(() => {
+    if (isEditMode) {
+      setIsOpen(true);
+      form.reset({
+        ...transactionToEdit,
+        paymentSource: transactionToEdit.cashInHand ? 'in_hand' : 'in_account'
+      });
+    } else {
+        form.reset({
+            amount: 0,
+            type: 'expense',
+            category: '',
+            description: '',
+            account: 'wife',
+            paymentMethod: 'online',
+        })
+    }
+  }, [transactionToEdit, isEditMode, form]);
+
   const paymentMethod = form.watch('paymentMethod');
 
   const onSubmit = async (values: AddTransactionFormValues) => {
-    const { paymentSource, ...restOfValues } = values;
-    
     const transactionData = {
-      ...restOfValues,
+      ...values,
       cashInHand: values.paymentMethod === 'cash' && values.paymentSource === 'in_hand',
-      ...(values.paymentMethod === 'cash' && { paymentSource }),
     };
+
+    if (isEditMode) {
+        await onSave({
+            ...transactionToEdit,
+            ...transactionData,
+        });
+    } else {
+        await onSave(transactionData);
+    }
     
-    await onAddTransaction(transactionData);
     form.reset();
     setIsOpen(false);
-    toast({
-      title: "Transaction Added",
-      description: "Your transaction has been successfully recorded.",
-    })
   };
+  
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+        onClose?.();
+        form.reset();
+    }
+  }
 
   const handleSuggestCategory = async () => {
     const description = form.getValues('description');
@@ -140,13 +172,13 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      {!isEditMode && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add New Transaction</DialogTitle>
+          <DialogTitle>{isEditMode ? "Edit Transaction" : "Add New Transaction"}</DialogTitle>
           <DialogDescription>
-            Enter the details of your transaction below.
+            {isEditMode ? "Update the details of your transaction below." : "Enter the details of your transaction below."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -160,7 +192,7 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="flex space-x-4"
                     >
                       <FormItem className="flex items-center space-x-2 space-y-0">
@@ -256,7 +288,7 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="flex space-x-4"
                     >
                       <FormItem className="flex items-center space-x-2 space-y-0">
@@ -294,7 +326,7 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
                             form.setValue('paymentSource', 'in_account');
                         }
                       }}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="flex space-x-4"
                     >
                       <FormItem className="flex items-center space-x-2 space-y-0">
@@ -326,7 +358,7 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         className="flex space-x-4"
                       >
                         <FormItem className="flex items-center space-x-2 space-y-0">
@@ -352,7 +384,7 @@ export default function AddTransactionDialog({ children, onAddTransaction }: Add
 
             <DialogFooter>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add Transaction"}
+                {form.formState.isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (isEditMode ? "Save Changes" : "Add Transaction")}
               </Button>
             </DialogFooter>
           </form>

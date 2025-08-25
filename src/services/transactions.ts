@@ -7,6 +7,9 @@ import {
   query,
   orderBy,
   Timestamp,
+  doc,
+  updateDoc,
+  deleteDoc,
 } from 'firebase/firestore';
 
 // A type guard to check if an object is a Firestore Timestamp
@@ -40,10 +43,36 @@ export async function addTransaction(
     ...transaction,
     date: new Date(),
   };
+  
+  // Remove paymentSource if it's undefined
+  if (newTransactionData.paymentSource === undefined) {
+    delete (newTransactionData as Partial<typeof newTransactionData>).paymentSource;
+  }
+
   const docRef = await addDoc(transactionsCol, newTransactionData);
 
   return {
     ...newTransactionData,
     id: docRef.id,
   };
+}
+
+export async function updateTransaction(
+  transaction: Transaction
+): Promise<void> {
+  const transactionRef = doc(db, 'transactions', transaction.id);
+  
+  const { id, ...dataToUpdate } = transaction;
+
+  // Remove paymentSource if it's undefined
+  if (dataToUpdate.paymentSource === undefined) {
+    delete (dataToUpdate as Partial<typeof dataToUpdate>).paymentSource;
+  }
+
+  await updateDoc(transactionRef, dataToUpdate);
+}
+
+export async function deleteTransaction(transactionId: string): Promise<void> {
+  const transactionRef = doc(db, 'transactions', transactionId);
+  await deleteDoc(transactionRef);
 }

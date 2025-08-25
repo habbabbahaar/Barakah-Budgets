@@ -7,12 +7,14 @@ import FinanceSummaryCard from '@/components/dashboard/FinanceSummaryCard';
 import TransactionHistory from '@/components/dashboard/TransactionHistory';
 import AddTransactionDialog from '@/components/dashboard/AddTransactionDialog';
 import { Button } from '@/components/ui/button';
-import { getTransactions, addTransaction as addTransactionService } from '@/services/transactions';
+import { getTransactions, addTransaction as addTransactionService, updateTransaction as updateTransactionService, deleteTransaction as deleteTransactionService } from '@/services/transactions';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -21,22 +23,70 @@ export default function Home() {
         setTransactions(fetchedTransactions);
       } catch (error) {
         console.error("Error fetching transactions:", error);
-        // Optionally, show a toast notification to the user
+        toast({
+            title: "Error",
+            description: "Failed to fetch transactions.",
+            variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchTransactions();
-  }, []);
+  }, [toast]);
 
   const addTransaction = async (transaction: Omit<Transaction, 'id' | 'date'>) => {
     try {
       const newTransaction = await addTransactionService(transaction);
       setTransactions(prev => [newTransaction, ...prev]);
+      toast({
+        title: "Success",
+        description: "Transaction added successfully.",
+      });
     } catch (error) {
       console.error("Error adding transaction:", error);
-       // Optionally, show a toast notification to the user
+      toast({
+        title: "Error",
+        description: "Failed to add transaction.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateTransaction = async (transaction: Transaction) => {
+    try {
+      await updateTransactionService(transaction);
+      setTransactions(prev => prev.map(t => t.id === transaction.id ? transaction : t));
+      toast({
+        title: "Success",
+        description: "Transaction updated successfully.",
+      });
+    } catch (error) {
+        console.error("Error updating transaction:", error);
+        toast({
+            title: "Error",
+            description: "Failed to update transaction.",
+            variant: "destructive",
+        });
+    }
+  };
+
+  const deleteTransaction = async (transactionId: string) => {
+    try {
+        await deleteTransactionService(transactionId);
+        setTransactions(prev => prev.filter(t => t.id !== transactionId));
+        toast({
+            title: "Success",
+            description: "Transaction deleted successfully.",
+        });
+    } catch (error) {
+        console.error("Error deleting transaction:", error);
+        toast({
+            title: "Error",
+            description: "Failed to delete transaction.",
+            variant: "destructive",
+        });
     }
   };
 
@@ -77,7 +127,7 @@ export default function Home() {
               Barakah Budgets
             </h1>
           </div>
-          <AddTransactionDialog onAddTransaction={addTransaction}>
+          <AddTransactionDialog onSave={addTransaction}>
              <Button>
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Transaction
               </Button>
@@ -115,7 +165,12 @@ export default function Home() {
           </div>
         )}
 
-        <TransactionHistory transactions={transactions} isLoading={loading} />
+        <TransactionHistory 
+          transactions={transactions} 
+          isLoading={loading}
+          onEdit={updateTransaction}
+          onDelete={deleteTransaction}
+        />
       </main>
     </div>
   );
