@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import type { Transaction } from '@/lib/types';
-import { PlusCircle, Wallet, HandCoins, Download, X } from 'lucide-react';
+import { PlusCircle, Wallet, HandCoins, X } from 'lucide-react';
 import FinanceSummaryCard from '@/components/dashboard/FinanceSummaryCard';
 import TransactionHistory from '@/components/dashboard/TransactionHistory';
 import AddTransactionDialog from '@/components/dashboard/AddTransactionDialog';
@@ -17,7 +17,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -81,11 +81,6 @@ export default function Home() {
     }
   };
 
-  const downloadPdf = async () => {
-    const { generatePdf } = await import('@/lib/pdf');
-    generatePdf(filteredTransactions);
-  };
-
   const filteredTransactions = useMemo(() => {
     if (!selectedDate) {
         return transactions;
@@ -97,13 +92,27 @@ export default function Home() {
     });
   }, [transactions, selectedDate]);
 
+  const monthlyTransactionsForPdf = useMemo(() => {
+    if (!selectedDate) {
+      return transactions;
+    }
+    return transactions.filter(t => 
+      t.date.getFullYear() === selectedDate.getFullYear() &&
+      t.date.getMonth() === selectedDate.getMonth()
+    );
+  }, [transactions, selectedDate]);
+
+  const downloadPdf = async () => {
+    const { generatePdf } = await import('@/lib/pdf');
+    generatePdf(monthlyTransactionsForPdf);
+  };
 
   const { wife, husband, cashInHand } = useMemo(() => {
     const wife = { income: 0, expenses: 0 };
     const husband = { income: 0, expenses: 0 };
     const cashInHand = { wife: 0, husband: 0 };
 
-    filteredTransactions.forEach(t => {
+    transactions.forEach(t => {
       if (t.cashInHand) {
         const cashTarget = t.account === 'wife' ? 'wife' : 'husband';
         if (t.type === 'income') {
@@ -122,7 +131,7 @@ export default function Home() {
     });
 
     return { wife, husband, cashInHand };
-  }, [filteredTransactions]);
+  }, [transactions]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -135,9 +144,6 @@ export default function Home() {
             </h1>
           </div>
           <div className='flex items-center gap-2'>
-            <Button variant="outline" onClick={downloadPdf} disabled={transactions.length === 0}>
-                <Download className="mr-2 h-4 w-4" /> Download PDF
-            </Button>
             <AddTransactionDialog onSave={addTransaction}>
                <Button>
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Transaction
@@ -191,6 +197,8 @@ export default function Home() {
           isLoading={loading}
           onEdit={updateTransaction}
           onDelete={deleteTransaction}
+          onDownloadPdf={downloadPdf}
+          isPdfDisabled={monthlyTransactionsForPdf.length === 0}
         />
       </main>
     </div>

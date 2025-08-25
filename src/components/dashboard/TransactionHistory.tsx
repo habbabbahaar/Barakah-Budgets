@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, User, CreditCard, Banknote, Hand, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, User, CreditCard, Banknote, Hand, MoreVertical, Pencil, Trash2, Download } from 'lucide-react';
 import { CATEGORY_MAP } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -39,6 +39,8 @@ interface TransactionHistoryProps {
   isLoading: boolean;
   onEdit: (transaction: Transaction) => Promise<void>;
   onDelete: (transactionId: string) => Promise<void>;
+  onDownloadPdf: () => void;
+  isPdfDisabled: boolean;
 }
 
 const formatCurrency = (amount: number) => {
@@ -91,7 +93,7 @@ const TransactionDetailsBadges = ({ transaction }: { transaction: Transaction })
     );
 };
 
-export default function TransactionHistory({ transactions, isLoading, onEdit, onDelete }: TransactionHistoryProps) {
+export default function TransactionHistory({ transactions, isLoading, onEdit, onDelete, onDownloadPdf, isPdfDisabled }: TransactionHistoryProps) {
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | undefined>(undefined);
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | undefined>(undefined);
   
@@ -120,8 +122,11 @@ export default function TransactionHistory({ transactions, isLoading, onEdit, on
   return (
     <>
       <Card className="shadow-md">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-xl font-headline">Transaction History</CardTitle>
+          <Button variant="outline" onClick={onDownloadPdf} disabled={isPdfDisabled}>
+            <Download className="mr-2 h-4 w-4" /> Download Monthly PDF
+          </Button>
         </CardHeader>
         <CardContent>
           {/* Desktop View */}
@@ -231,7 +236,7 @@ export default function TransactionHistory({ transactions, isLoading, onEdit, on
 
           {!isLoading && transactions.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
-                  No transactions yet. Add one to get started!
+                  No transactions for this day. Add one or pick another date!
               </div>
           )}
         </CardContent>
